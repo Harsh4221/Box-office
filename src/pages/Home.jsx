@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/function-component-definition */
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import ActorGrid from '../components/actor/ActorGrid';
 import CustomRadio from '../components/CustomRadio';
 import MainPageLayout from '../components/MainPageLayout';
@@ -13,15 +13,33 @@ import {
   SearchInput,
 } from './Home.styled';
 
+const renderResults = results => {
+  if (results && results.length === 0) {
+    return <div>No Results</div>;
+  }
+
+  if (results && results.length > 0) {
+    return results[0].show ? (
+      <ShowGrid data={results} />
+    ) : (
+      <ActorGrid data={results} />
+    );
+  }
+  return null;
+};
+
 const Home = () => {
   const [input, setInput] = useLastQuery();
   const [results, setResults] = useState(null);
   const [searchOption, setSearchOption] = useState('shows');
   const isShowsSearch = searchOption === 'shows';
 
-  const onInputChange = ev => {
-    setInput(ev.target.value);
-  };
+  const onInputChange = useCallback(
+    ev => {
+      setInput(ev.target.value);
+    },
+    [setInput]
+  );
 
   const onSearch = () => {
     // https://api.tvmaze.com/search/shows?q=girls
@@ -36,28 +54,11 @@ const Home = () => {
     }
   };
 
-  const renderResults = () => {
-    if (results && results.length === 0) {
-      return <div>No Results</div>;
-    }
-
-    if (results && results.length > 0) {
-      return results[0].show ? (
-        <ShowGrid data={results} />
-      ) : (
-        // results.map(item => <div key={item.show.id}>{item.show.name}</div>)
-        <ActorGrid data={results} />
-        // results.map(item => (
-        //   <div key={item.person.id}>{item.person.name}</div>
-        // ))
-      );
-    }
-    return null;
-  };
-
-  const onRadioChange = ev => {
+  const onRadioChange = useCallback(ev => {
     setSearchOption(ev.target.value);
-  };
+  }, []);
+
+  // useWhyDidYouUpdate('home', { onInputChange, onKeyDown });
 
   return (
     <MainPageLayout>
@@ -93,7 +94,7 @@ const Home = () => {
           Search
         </button>
       </SearchButtonWrapper>
-      {renderResults()}
+      {renderResults(results)}
     </MainPageLayout>
   );
 };
